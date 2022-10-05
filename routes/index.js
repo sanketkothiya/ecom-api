@@ -9,6 +9,8 @@ route.post('/register', registerController.register)
 route.post('/login', loginController.login)
 route.get('/me', auth, userController.me)
 route.post('/refresh', refreshController.refresh);
+route.post('/logout', auth, loginController.logout);
+
 
 module.exports = route
 // export default router;

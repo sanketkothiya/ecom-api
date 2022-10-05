@@ -56,6 +56,29 @@ const loginController = {
         }
         console.log('done');
 
+    }, async logout(req, res, next) {
+        // validation
+        const refreshSchema = Joi.object({
+            refresh_token: Joi.string().required(),
+        });
+        // schema options
+        const options = {
+            abortEarly: false, // include all errors
+            allowUnknown: true, // ignore unknown props
+            stripUnknown: true // remove unknown props
+        };
+        const { error } = refreshSchema.validate(req.body, options);
+
+        if (error) {
+            return next(error);
+        }
+
+        try {
+            await RefreshToken.deleteOne({ token: req.body.refresh_token });
+        } catch (err) {
+            return next(new Error('Something went wrong in the database'));
+        }
+        res.json({ status: 1 });
     }
 };
 
