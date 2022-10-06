@@ -18,10 +18,10 @@ route.post('/logout', auth, loginController.logout);
 // route.post('/products', auth, productController.store);
 route.post('/products', [auth, admin], productController.store);
 route.put('/products/:id', [auth, admin], productController.update);
+route.delete('/products/:id', [auth, admin], productController.destroy);
 
 // router.post('/products/cart-items', productController.getProducts);
 
-// router.delete('/products/:id', [auth, admin], productController.destroy);
 // router.get('/products', productController.index);
 // router.get('/products/:id', productController.show);
 
