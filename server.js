@@ -23,8 +23,8 @@ app.use(morgan('tiny'));
 
 
 // globally define app root and use any where
-global.appRoot = path.resolve(__dirname);
-console.log(appRoot);
+// global.appRoot = path.resolve(__dirname);
+// console.log(appRoot);
 
 // parse request to body-parser
 app.use(bodyparser.urlencoded({ extended: true }))
@@ -36,6 +36,9 @@ app.use(express.json())
 
 app.use('/api', router);
 app.use(errorHandler)
+
+// const s = path.join(__dirname, '');
+// require('./controllers/productController')(app, s)
 
 
 app.listen(APP_PORT, () => {

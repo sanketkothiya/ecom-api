@@ -8,149 +8,150 @@ const CustomErrorHandler = require('../services/CustomErrorHandler')
 const productSchema = require('../validators/productValidator')
 
 
-console.log("enter in productcontroller")
+// console.log("enter in productcontroller")
+
+const { dirname } = require('path');
+const appDir = dirname(require.main.filename);
+// console.log(appDir)
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, 'uploads'),
+    filename: (req, file, cb) => {
+        const uniqueName = `${Date.now()}-${Math.round(
+            Math.random() * 1e9
+        )}${path.extname(file.originalname)}`;
+        // 3746674586-836534453.png
+        cb(null, uniqueName);
+    },
+});
+
+const handleMultipartData = multer({
+    storage,
+    limits: { fileSize: 1000000 * 5 },
+}).single('image'); // 5mb image header ma use karvu 
 
 
-
-
-
-// import { Product } from '../models';
-// import multer from 'multer';
-// import path from 'path';
-// import CustomErrorHandler from '../services/CustomErrorHandler';
-// import fs from 'fs';
-// import Joi from 'joi';
-// import productSchema from '../validators/productValidator';
-
-// const storage = multer.diskStorage({
-//     destination: (req, file, cb) => cb(null, upload),
-//     filename: (req, file, cb) => {
-//         const uniqueName = `${Date.now()}-${Math.round(
-//             Math.random() * 1e9
-//         )}${path.extname(file.originalname)}`;
-//         // 3746674586-836534453.png
-//         cb(null, uniqueName);
-//     },
-// });
-
-// const handleMultipartData = multer({
-//     storage,
-//     limits: { fileSize: 1000000 * 5 },
-// }).single('image'); // 5mb image header ma use karvu 
-
-const upload = multer({
-    storage: multer.diskStorage({
-        destination: function (req, file, cb) {
-            cb(null, 'uploads')
-        },
-        filename: function (req, file, cb) {
-            cb(null, file.fieldname + "-" + Date.now() + `${path.extname(file.originalname)}`)
-        },
-        limits: { fileSize: 1000000 * 5 }
-    })
-}).single('image')
+// method 2 for upload
+// const upload = multer({
+//     storage: multer.diskStorage({
+//         destination: function (req, file, cb) {
+//             cb(null, 'uploads')
+//         },
+//         filename: function (req, file, cb) {
+//             cb(null, file.fieldname + "-" + Date.now() + `${path.extname(file.originalname)}`)
+//         },
+//         limits: { fileSize: 1000000 * 5 }
+//     })
+// }).single('image')
 
 
 
 const productController = {
     async store(req, res, next) {
         // Multipart form data
-        upload(req, res, async (err) => {
+        handleMultipartData(req, res, async (err) => {
             if (err) {
                 console.log("error");
                 return next(CustomErrorHandler.serverError(err.message));
             }
             const filePath = req.file.path;
-            console.log(req.file)
+            // console.log(req.file)
+
 
 
             // schema options
-            // const options = {
-            //     abortEarly: false, // include all errors
-            //     allowUnknown: true, // ignore unknown props
-            //     stripUnknown: true // remove unknown props
-            // };
+            const options = {
+                abortEarly: false, // include all errors
+                allowUnknown: true, // ignore unknown props
+                stripUnknown: true // remove unknown props
+            };
 
-            // // validation
-            // const { error } = productSchema.validate(req.body, options);
-            // if (error) {
-            //     // Delete the uploaded file
-            //     fs.unlink(`${appRoot}/${filePath}`, (err) => {
-            //         if (err) {
-            //             return next(
-            //                 CustomErrorHandler.serverError(err.message)
-            //             );
-            //         }
-            //     });
+            // validation
+            const { error } = productSchema.validate(req.body, options);
+            if (error) {
+                // Delete the uploaded file
+                fs.unlink(`${appDir}/${filePath}`, (err) => {
+                    if (err) {
+                        return next(
+                            CustomErrorHandler.serverError(err.message)
+                        );
+                    }
+                });
+                return next(error);
+                // rootfolder/uploads/filename.png
+            }
 
-            //     return next(error);
-            //     // rootfolder/uploads/filename.png
-            // }
+            const { name, price, size } = req.body;
+            let document;
+            try {
+                document = await Product.create({
+                    name,
+                    price,
+                    size,
+                    image: filePath,
+                });
+            } catch (err) {
+                return next(err);
+            }
+            res.status(201).json(document);
+            // res.json({})
+        });
+    }
+    ,
+    update(req, res, next) {
+        handleMultipartData(req, res, async (err) => {
+            if (err) {
+                return next(CustomErrorHandler.serverError(err.message));
+            }
+            let filePath;
+            if (req.file) {
+                filePath = req.file.path;
+            }
+            // schema options
+            const options = {
+                abortEarly: false, // include all errors
+                allowUnknown: true, // ignore unknown props
+                stripUnknown: true // remove unknown props
+            };
 
-            // const { name, price, size } = req.body;
-            // let document;
-            // try {
-            //     document = await Product.create({
-            //         name,
-            //         price,
-            //         size,
-            //         image: filePath,
-            //     });
-            // } catch (err) {
-            //     return next(err);
-            // }
-            // res.status(201).json(document);
-            res.json({})
+            // validation
+            const { error } = productSchema.validate(req.body, options);
+            if (error) {
+                // Delete the uploaded file
+                if (req.file) {
+                    fs.unlink(`${appRoot}/${filePath}`, (err) => {
+                        if (err) {
+                            return next(
+                                CustomErrorHandler.serverError(err.message)
+                            );
+                        }
+                    });
+                }
+
+                return next(error);
+                // rootfolder/uploads/filename.png
+            }
+
+            const { name, price, size } = req.body;
+            let document;
+            try {
+                document = await Product.findOneAndUpdate(
+                    { _id: req.params.id },
+                    {
+                        name,
+                        price,
+                        size,
+                        ...(req.file && { image: filePath }),
+                    },
+                    { new: true }
+                );
+            } catch (err) {
+                return next(err);
+            }
+            res.status(201).json(document);
         });
     }
     // ,
-    // update(req, res, next) {
-    //     handleMultipartData(req, res, async (err) => {
-    //         if (err) {
-    //             return next(CustomErrorHandler.serverError(err.message));
-    //         }
-    //         let filePath;
-    //         if (req.file) {
-    //             filePath = req.file.path;
-    //         }
-
-    //         // validation
-    //         const { error } = productSchema.validate(req.body);
-    //         if (error) {
-    //             // Delete the uploaded file
-    //             if (req.file) {
-    //                 fs.unlink(`${appRoot}/${filePath}`, (err) => {
-    //                     if (err) {
-    //                         return next(
-    //                             CustomErrorHandler.serverError(err.message)
-    //                         );
-    //                     }
-    //                 });
-    //             }
-
-    //             return next(error);
-    //             // rootfolder/uploads/filename.png
-    //         }
-
-    //         const { name, price, size } = req.body;
-    //         let document;
-    //         try {
-    //             document = await Product.findOneAndUpdate(
-    //                 { _id: req.params.id },
-    //                 {
-    //                     name,
-    //                     price,
-    //                     size,
-    //                     ...(req.file && { image: filePath }),
-    //                 },
-    //                 { new: true }
-    //             );
-    //         } catch (err) {
-    //             return next(err);
-    //         }
-    //         res.status(201).json(document);
-    //     });
-    // },
     // async destroy(req, res, next) {
     //     const document = await Product.findOneAndRemove({ _id: req.params.id });
     //     if (!document) {

@@ -2,6 +2,7 @@ const express = require('express');
 const route = express.Router()
 const { loginController, registerController, userController, refreshController, productController } = require('../controllers');
 const auth = require('../middlewares/auth')
+const admin = require('../middlewares/admin')
 
 
 // authentication
@@ -13,12 +14,13 @@ route.post('/logout', auth, loginController.logout);
 
 // product database
 
-route.post('/products', productController.store);
+// add item by admin
+// route.post('/products', auth, productController.store);
+route.post('/products', [auth, admin], productController.store);
+route.put('/products/:id', [auth, admin], productController.update);
 
 // router.post('/products/cart-items', productController.getProducts);
 
-// router.post('/products', [auth, admin], productController.store);
-// router.put('/products/:id', [auth, admin], productController.update);
 // router.delete('/products/:id', [auth, admin], productController.destroy);
 // router.get('/products', productController.index);
 // router.get('/products/:id', productController.show);
