@@ -158,15 +158,15 @@ const productController = {
             return next(new Error('Nothing to delete'));
         }
         // image delete
-        const imagePath = document.image;
+        const imagePath = document._doc.image;
         // http://localhost:5000/uploads/1616444052539-425006577.png
         // approot/http://localhost:5000/uploads/1616444052539-425006577.png
         fs.unlink(`${appDir}/${imagePath}`, (err) => {
             if (err) {
                 return next(CustomErrorHandler.serverError());
             }
-            return res.json(document);
         });
+        return res.json(document);
     }
     // ,
     // async index(req, res, next) {

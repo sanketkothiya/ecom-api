@@ -19,10 +19,10 @@ route.post('/logout', auth, loginController.logout);
 route.post('/products', [auth, admin], productController.store);
 route.put('/products/:id', [auth, admin], productController.update);
 route.delete('/products/:id', [auth, admin], productController.destroy);
+route.get('/products', productController.index);
 
 // router.post('/products/cart-items', productController.getProducts);
 
-// router.get('/products', productController.index);
 // router.get('/products/:id', productController.show);
 
 
