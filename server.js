@@ -31,8 +31,8 @@ app.use(bodyparser.urlencoded({ extended: true }))
 app.use(express.json())
 
 
-// upload photos
-// app.use('/uploads', express.static('uploads'));
+// upload photos getter for mongoose
+app.use('/uploads', express.static('uploads'));
 
 app.use('/api', router);
 app.use(errorHandler)
