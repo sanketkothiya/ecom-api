@@ -159,14 +159,16 @@ const productController = {
         }
         // image delete
         const imagePath = document._doc.image;
+        console.log(imagePath);
+        // -doc give clean path without  getter
         // http://localhost:5000/uploads/1616444052539-425006577.png
         // approot/http://localhost:5000/uploads/1616444052539-425006577.png
         fs.unlink(`${appDir}/${imagePath}`, (err) => {
             if (err) {
                 return next(CustomErrorHandler.serverError());
             }
+            return res.json(document);
         });
-        return res.json(document);
     }
     ,
     async index(req, res, next) {
@@ -181,18 +183,19 @@ const productController = {
         }
         return res.json(documents);
     }
+    ,
+    async show(req, res, next) {
+        let document;
+        try {
+            document = await Product.findOne({ _id: req.params.id }).select(
+                '-updatedAt -__v'
+            );
+        } catch (err) {
+            return next(CustomErrorHandler.serverError());
+        }
+        return res.json(document);
+    }
     // ,
-    // async show(req, res, next) {
-    //     let document;
-    //     try {
-    //         document = await Product.findOne({ _id: req.params.id }).select(
-    //             '-updatedAt -__v'
-    //         );
-    //     } catch (err) {
-    //         return next(CustomErrorHandler.serverError());
-    //     }
-    //     return res.json(document);
-    // },
     // async getProducts(req, res, next) {
     //     let documents;
     //     try {
