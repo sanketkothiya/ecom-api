@@ -1,5 +1,5 @@
-const User=require('../../models');
-const CustomErrorHandler =require("../../services/CustomErrorHandler")
+const User = require('../../models/user');
+const CustomErrorHandler = require("../../services/CustomErrorHandler")
 
 const userController = {
     async me(req, res, next) {
@@ -9,10 +9,10 @@ const userController = {
                 return next(CustomErrorHandler.notFound());
             }
             res.json(user);
-        } catch(err) {
-           return next(err);
+        } catch (err) {
+            return next(err);
         }
     }
 };
 
-module.exports= userController;
+module.exports = userController;

@@ -5,7 +5,7 @@ const morgan = require('morgan');
 const bodyparser = require("body-parser");
 const errorHandler = require('./middlewares/errorHandler')
 const path = require('path')
-// const cors = require('cors')
+const cors = require('cors')
 
 const connectDB = require('./database/connection');
 connectDB();
@@ -13,7 +13,7 @@ const app = express()
 
 
 
-// app.use(cors());
+app.use(cors());
 
 const dotenv = require('dotenv');
 dotenv.config({ path: 'config.env' })
